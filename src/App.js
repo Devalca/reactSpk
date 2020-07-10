@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 import "./App.css";
 import firebase from "./Firebase";
+import HeaderOne from "./components/Header/HeaderOne";
 
 class App extends Component {
   constructor(props) {
@@ -16,7 +16,7 @@ class App extends Component {
   onCollectionUpdate = (querySnapshot) => {
     const alter = [];
     querySnapshot.forEach((doc) => {
-      const { kode, alternatif} = doc.data();
+      const { kode, alternatif } = doc.data();
       alter.push({
         key: doc.id,
         doc,
@@ -35,36 +35,30 @@ class App extends Component {
 
   render() {
     return (
-      <div class="container">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3 class="panel-title">Sistem Pemilihan Keputusan</h3>
-          </div>
-          <div class="panel-body">
-            <h4>
-              <Link to="/create">Tambah Data</Link>
-            </h4>
-            <h4>
-              <Link to="/result">Perhitungan</Link>
-            </h4>
-            <table class="table table-stripe">
-              <thead>
-                <tr>
-                  <th>Kode</th>
-                  <th>Nama Alternatif</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.state.alter.map((alter) => (
+      <div>
+        <HeaderOne />
+        <div className="container">
+          <div className="panel panel-default">
+            <div className="panel-body">
+              <table className="table table-stripe table-bordered">
+              <thead className="table-primary">
                   <tr>
-                    <td>
-                      <Link to={`/show/${alter.key}`}>{alter.kode}</Link>
-                    </td>
-                    <td>{alter.alternatif}</td>
+                    <th>Kode</th>
+                    <th>Nama Alternatif</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {this.state.alter.map((alter, index) => (
+                    <tr key={index}>
+                      <td>
+                       {alter.kode}
+                      </td>
+                      <td>{alter.alternatif}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

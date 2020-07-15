@@ -19,6 +19,7 @@ class Create extends Component {
       atribut: ["cost", "benefit"],
     };
   }
+
   onChange = (e) => {
     const state = this.state;
     state[e.target.name] = e.target.value;
@@ -59,34 +60,38 @@ class Create extends Component {
     e.preventDefault();
 
     const { kode, alternatif, que1, que2, que3, que4, que5 } = this.state;
-    const nilai = [
-      parseInt(que1),
-      parseInt(que2),
-      parseInt(que3),
-      parseInt(que4),
-      parseInt(que5),
-    ];
-    this.ref
-      .add({
-        kode,
-        alternatif,
-        nilai,
-      })
-      .then((docRef) => {
-        this.setState({
-          kode: "",
-          alternatif: "",
-          // que1,
-          // que2,
-          // que3,
-          // que4,
-          // que5,
+    if (kode != "") {
+      const nilai = [
+        parseInt(que1),
+        parseInt(que2),
+        parseInt(que3),
+        parseInt(que4),
+        parseInt(que5),
+      ];
+      this.ref
+        .add({
+          kode,
+          alternatif,
+          nilai,
+        })
+        .then((docRef) => {
+          this.setState({
+            kode: "",
+            alternatif: "",
+            // que1,
+            // que2,
+            // que3,
+            // que4,
+            // que5,
+          });
+          this.props.history.push("/");
+        })
+        .catch((error) => {
+          console.error("Error adding document: ", error);
         });
-        this.props.history.push("/");
-      })
-      .catch((error) => {
-        console.error("Error adding document: ", error);
-      });
+    } else {
+      alert("Silahkan Lengkapi Data")
+    }
   };
 
   render() {

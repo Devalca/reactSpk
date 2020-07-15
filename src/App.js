@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 import firebase from "./Firebase";
+import { Link } from "react-router-dom";
 import HeaderOne from "./components/Header/HeaderOne";
 
 class App extends Component {
@@ -41,7 +42,7 @@ class App extends Component {
           <div className="panel panel-default">
             <div className="panel-body">
               <table className="table table-stripe table-bordered">
-              <thead className="table-primary">
+                <thead className="table-primary">
                   <tr>
                     <th>Kode</th>
                     <th>Nama Alternatif</th>
@@ -51,7 +52,7 @@ class App extends Component {
                   {this.state.alter.map((alter, index) => (
                     <tr key={index}>
                       <td>
-                       {alter.kode}
+                        <Link to={`/show/${alter.key}`}>{alter.kode}</Link>
                       </td>
                       <td>{alter.alternatif}</td>
                     </tr>

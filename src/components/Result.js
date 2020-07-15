@@ -164,7 +164,6 @@ class Result extends Component {
     });
     let rank = [];
     for (const item of this.state.tabelTotal) {
-      // const name = 
       const data = [
         item[0], parseFloat(item[2] / (item[1] + item[2]))
       ]

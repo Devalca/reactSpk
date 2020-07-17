@@ -6,18 +6,61 @@ class Create extends Component {
   constructor() {
     super();
     this.ref = firebase.firestore().collection("siswa");
+    this.bon = firebase.firestore().collection("data_kriteria");
+    this.unsubscribeTwo = null;
     this.state = {
       kode: "",
       alternatif: "",
+      perta: [],
+      kriter: [],
+      bon: [],
       isOpen: false,
-      que1: 1,
-      que2: 1,
-      que3: 1,
-      que4: 1,
-      que5: 1,
+      que: [],
       nilai: [1, 2, 3, 4, 5],
-      atribut: ["cost", "benefit"],
     };
+  }
+
+  onCollectionUpdateTwo = (querySnapshot) => {
+    const kriter = [];
+    querySnapshot.forEach((doc) => {
+      const { kode, kriteria, bobot, atribut } = doc.data();
+      kriter.push({
+        key: doc.id,
+        doc,
+        kode,
+        kriteria,
+        bobot,
+        atribut,
+      });
+    });
+
+    let baru = [];
+    for (let i = 0; i < kriter.length; i++) {
+      if (i === 0) {
+        baru.push(true);
+      } else {
+        baru.push(false);
+      }
+    }
+
+    this.setState({
+      kriter,
+      que: baru,
+    });
+
+    const perta = [];
+    for (let i = 0; i < this.state.kriter.length; i++) {
+      const element = this.state.kriter[i];
+      perta.push(element.kriteria);
+    }
+
+    this.setState({
+      perta,
+    });
+  };
+
+  componentDidMount() {
+    this.unsubscribeTwo = this.bon.onSnapshot(this.onCollectionUpdateTwo);
   }
 
   onChange = (e) => {
@@ -26,71 +69,46 @@ class Create extends Component {
     this.setState(state);
   };
 
-  handleque1 = (e) => {
-    this.setState({ que1: e.target.value }, () => {
-      console.log(this.state.que1);
-    });
-  };
+  handleque1 = (e, index) => {
+    let bon = [...this.state.bon];
+    let que = [...this.state.que];
+    que[index + 1] = true;
+    if (bon[index] != undefined) {
+      bon[index] = parseInt(e.target.value);
+    } else {
+      bon.push(parseInt(e.target.value));
+    }
 
-  handleque2 = (e) => {
-    this.setState({ que2: e.target.value }, () => {
-      console.log(this.state.que2);
-    });
-  };
-
-  handleque3 = (e) => {
-    this.setState({ que3: e.target.value }, () => {
-      console.log(this.state.que3);
-    });
-  };
-
-  handleque4 = (e) => {
-    this.setState({ que4: e.target.value }, () => {
-      console.log(this.state.que4);
-    });
-  };
-
-  handleque5 = (e) => {
-    this.setState({ que5: e.target.value }, () => {
-      console.log(this.state.que5);
+    this.setState({
+      bon,
+      que,
     });
   };
 
   onSubmit = (e) => {
     e.preventDefault();
 
-    const { kode, alternatif, que1, que2, que3, que4, que5 } = this.state;
+    const { kode, alternatif, nilai } = this.state;
     if (kode != "") {
-      const nilai = [
-        parseInt(que1),
-        parseInt(que2),
-        parseInt(que3),
-        parseInt(que4),
-        parseInt(que5),
-      ];
       this.ref
         .add({
           kode,
           alternatif,
-          nilai,
+          nilai: this.state.bon,
         })
         .then((docRef) => {
           this.setState({
             kode: "",
             alternatif: "",
-            // que1,
-            // que2,
-            // que3,
-            // que4,
-            // que5,
           });
-          this.props.history.push("/");
+          this.props.history.push("/home");
+          alert("Data Berhasil Di input");
         })
         .catch((error) => {
           console.error("Error adding document: ", error);
         });
     } else {
-      alert("Silahkan Lengkapi Data")
+      alert("Silahkan Lengkapi Data");
     }
   };
 
@@ -107,7 +125,9 @@ class Create extends Component {
           }}
         >
           <div className="card">
-            <div className="card-header">Tambah Data Siswa</div>
+            <div className="card-header bg-primary">
+              <a style={{ color: "white" }}>Tambah Data Siswa</a>
+            </div>
             <div className="card-body">
               <div className="panel panel-default">
                 <div className="panel-body">
@@ -135,90 +155,34 @@ class Create extends Component {
                       />
                     </div>
                     {/* PERTANYAAN 1 */}
-                    <label className="D-block">Pertanyaan 1</label>
-                    <div className="form-group">
-                      <div className="btn-group">
-                        <label className="D-block">Nilai:</label>
-                        <select
-                          className="form-control mr-3 ml-2"
-                          onClick={this.handleque1}
-                        >
-                          {this.state.nilai.map((n, index) => (
-                            <option key={index} value={n}>
-                              {n}
-                            </option>
-                          ))}
-                        </select>
+                    {this.state.kriter.map((loopQue, index) => (
+                      <div key={index}>
+                        <label className="D-block">
+                          Pertanyaan {loopQue.kriteria}
+                        </label>
+                        <div className="form-group">
+                          <div className="btn-group">
+                            <label className="D-block">Nilai:</label>
+                            <select
+                              defaultValue="kosong"
+                              disabled={!this.state.que[index]}
+                              className="form-control mr-3 ml-2"
+                              onChange={(e) => this.handleque1(e, index)}
+                            >
+                              <option disabled value="kosong">
+                                Pilih
+                              </option>
+                              {this.state.nilai.map((n, index) => (
+                                <option key={index} value={n}>
+                                  {n}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    {/* PERTANYAAN 2 */}
-                    <label className="D-block">Pertanyaan 2</label>
-                    <div className="form-group">
-                      <div className="btn-group">
-                        <label className="D-block">Nilai:</label>
-                        <select
-                          className="form-control mr-3 ml-2"
-                          onClick={this.handleque2}
-                        >
-                          {this.state.nilai.map((n, index) => (
-                            <option key={index} value={n}>
-                              {n}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    {/* PERTANYAAN 3 */}
-                    <label className="D-block">Pertanyaan 3</label>
-                    <div className="form-group">
-                      <div className="btn-group">
-                        <label className="D-block">Nilai:</label>
-                        <select
-                          className="form-control mr-3 ml-2"
-                          onClick={this.handleque3}
-                        >
-                          {this.state.nilai.map((n, index) => (
-                            <option key={index} value={n}>
-                              {n}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    {/* PERTANYAAN 4 */}
-                    <label className="D-block">Pertanyaan 4</label>
-                    <div className="form-group">
-                      <div className="btn-group">
-                        <label className="D-block">Nilai:</label>
-                        <select
-                          className="form-control mr-3 ml-2"
-                          onClick={this.handleque4}
-                        >
-                          {this.state.nilai.map((n, index) => (
-                            <option key={index} value={n}>
-                              {n}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    {/* PERTANYAAN 5 */}
-                    <label className="D-block">Pertanyaan 5</label>
-                    <div className="form-group">
-                      <div className="btn-group">
-                        <label className="D-block">Nilai:</label>
-                        <select
-                          className="form-control mr-3 ml-2"
-                          onClick={this.handleque5}
-                        >
-                          {this.state.nilai.map((n, index) => (
-                            <option key={index} value={n}>
-                              {n}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
+                    ))}
+
                     <button type="submit" className="btn btn-primary">
                       Tambah Data
                     </button>

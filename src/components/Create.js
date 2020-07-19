@@ -69,6 +69,20 @@ class Create extends Component {
     this.setState(state);
   };
 
+  juk = () => {
+  alert(`
+  - Masukan Kode dengan Awalan SI di tambah nomor ex : SI1
+  - Masukan nama alternatif untuk nama siswa
+  - Pilih bobot nilai 1 - 5
+  - Keterangan bobot Nilai : 
+    - 10 - 20 : 1
+    - 30 - 40 : 2
+    - 50 - 60 : 3
+    - 70 - 80 : 4
+    - 90 - 100 : 5
+  `)  
+  };
+
   handleque1 = (e, index) => {
     let bon = [...this.state.bon];
     let que = [...this.state.que];
@@ -119,18 +133,28 @@ class Create extends Component {
         <HeaderThree />
         <div
           style={{
-            paddingLeft: "50px",
-            paddingRight: "50px",
+            paddingLeft: "300px",
+            paddingRight: "300px",
             paddingBottom: "50px",
           }}
         >
+          <button className="btn btn-primary mb-4" onClick={this.juk}>
+            Petunjuk
+          </button>
           <div className="card">
             <div className="card-header bg-primary">
               <a style={{ color: "white" }}>Tambah Data Siswa</a>
             </div>
             <div className="card-body">
               <div className="panel panel-default">
-                <div className="panel-body">
+                <div
+                  className="panel-body"
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
                   <form onSubmit={this.onSubmit}>
                     <div className="form-group">
                       <label htmlFor="kode">Kode:</label>
@@ -154,7 +178,6 @@ class Create extends Component {
                         placeholder="Masukan Nama Alternatif"
                       />
                     </div>
-                    {/* PERTANYAAN 1 */}
                     {this.state.kriter.map((loopQue, index) => (
                       <div key={index}>
                         <label className="D-block">
@@ -182,7 +205,6 @@ class Create extends Component {
                         </div>
                       </div>
                     ))}
-
                     <button type="submit" className="btn btn-primary">
                       Tambah Data
                     </button>

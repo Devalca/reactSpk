@@ -44,6 +44,14 @@ class Data extends Component {
     this.unsubscribe = this.ref.onSnapshot(this.onCollectionUpdate);
   }
 
+  juk = () => {
+    alert(`
+    - Masukan Kode hanya berupa angka dan jangan masukan nomor yg sudah terdaftar atau nomor yg sudah terdaftar akan di replace dengan data baru
+    
+    - Nilai bobot akan menjadi nilai rata-rata untuk penilaian siswa
+    `)  
+    };
+
   onChange = (e) => {
     const state = this.state;
     state[e.target.name] = e.target.value;
@@ -75,7 +83,12 @@ class Data extends Component {
 
     this.ref
       .doc(kode)
-      .set({ kode, kriteria, atribut: this.state.que2, bobot: parseInt(this.state.que) })
+      .set({
+        kode,
+        kriteria,
+        atribut: this.state.que2,
+        bobot: parseInt(this.state.que),
+      })
       .then((docRef) => {
         this.setState({
           kode: "",
@@ -103,10 +116,13 @@ class Data extends Component {
             <div className="panel panel-default">
               <div className="panel-body">
                 <button
-                  className="btn btn-primary mb-4"
+                  className="btn btn-primary mb-4 mr-3"
                   onClick={() => this.setState({ showing: !showing })}
                 >
-                  Tambah Data
+                  Tampilkan Form Tambah Kriteria
+                </button>
+                <button className="btn btn-primary mb-4" onClick={this.juk}>
+                  Petunjuk
                 </button>
                 <table className="table table-stripe table-bordered">
                   <thead className="table-primary">
@@ -139,8 +155,8 @@ class Data extends Component {
         {showing ? (
           <div
             style={{
-              paddingLeft: "50px",
-              paddingRight: "50px",
+              paddingLeft: "300px",
+              paddingRight: "300px",
               paddingBottom: "50px",
             }}
           >

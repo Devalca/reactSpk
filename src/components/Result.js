@@ -237,8 +237,6 @@ class Result extends Component {
     this.unsubscribe = this.ref.onSnapshot(this.onCollectionUpdate);
   }
 
-  com
-
   render() {
     return (
       <div>

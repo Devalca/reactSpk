@@ -115,7 +115,7 @@ class Create extends Component {
             kode: "",
             alternatif: "",
           });
-          this.props.history.push("/home");
+          this.props.history.push("/");
           alert("Data Berhasil Di input");
         })
         .catch((error) => {

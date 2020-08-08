@@ -3,7 +3,7 @@ import firebase from "../Firebase";
 import { Link } from "react-router-dom";
 import HeaderOne from "../components/Header/HeaderOne";
 
-class Show extends Component {
+class ShowKrit extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -15,7 +15,7 @@ class Show extends Component {
   componentDidMount() {
     const ref = firebase
       .firestore()
-      .collection("siswa")
+      .collection("data_kriteria")
       .doc(this.props.match.params.id);
     ref.get().then((doc) => {
       if (doc.exists) {
@@ -33,12 +33,12 @@ class Show extends Component {
   delete(id) {
     firebase
       .firestore()
-      .collection("siswa")
+      .collection("data_kriteria")
       .doc(id)
       .delete()
       .then(() => {
         console.log("Document successfully deleted!");
-        this.props.history.push("/");
+        this.props.history.push("/data");
       })
       .catch((error) => {
         console.error("Error removing document: ", error);
@@ -62,7 +62,7 @@ class Show extends Component {
               <div className="container">
                 <div className="panel panel-default">
                   <div className="panel-body">
-                    <p>APAKAH ANDA YAKIN INGIN MENGHAPUS SISWA INI?</p>
+                    <p>APAKAH ANDA YAKIN INGIN MENGHAPUS KRITERIA INI?</p>
                     <p>Klik tombol hapus untuk melanjutkan atau klik tombol kembali untuk membatalkan</p>
                     <button
                       onClick={this.delete.bind(this, this.state.key)}
@@ -70,7 +70,7 @@ class Show extends Component {
                     >
                       Hapus
                     </button>
-                    <Link to="/">
+                    <Link to="/data">
                       <button className="btn btn-primary" type="button">
                         Kembali
                       </button>
@@ -86,4 +86,4 @@ class Show extends Component {
   }
 }
 
-export default Show;
+export default ShowKrit;

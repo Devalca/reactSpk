@@ -1,22 +1,57 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 import "../App.css";
 import firebase from "../Firebase";
+import HeaderTwo from "../components/Header/HeaderTwo";
 
 class Result extends Component {
   constructor(props) {
     super(props);
     this.ref = firebase.firestore().collection("siswa");
+    this.bon = firebase.firestore().collection("data_kriteria");
     this.unsubscribe = null;
+    this.unsubscribeTwo = null;
     this.state = {
       alter: [],
-      que1: [],
-      que2: [],
-      que3: [],
-      que4: [],
-      que5: [],
+      kriter: [{}],
+      jumKuadrat: [],
+      bobotKriter: [],
+      arrMatriks: [],
+      finalCount: [],
+      allQue: [],
+      sumAll: [],
+      totalRank: [],
+      show: false
     };
   }
+
+  onCollectionUpdateTwo = (querySnapshot) => {
+    const kriter = [];
+    querySnapshot.forEach((doc) => {
+      const { kode, kriteria, bobot, atribut } = doc.data();
+      kriter.push({
+        key: doc.id,
+        doc,
+        kode,
+        kriteria,
+        bobot,
+        atribut,
+      });
+    });
+    this.setState({
+      kriter,
+    });
+
+    let bobotKriter = [];
+    for (const item of this.state.kriter) {
+      bobotKriter.push(item.bobot);
+    }
+
+    this.setState({
+      bobotKriter,
+    });
+
+    console.log(bobotKriter)
+  };
 
   onCollectionUpdate = (querySnapshot) => {
     const alter = [];
@@ -33,273 +68,340 @@ class Result extends Component {
     this.setState({
       alter,
     });
-    let que1 = [...this.state.que1];
-    let que2 = [...this.state.que2];
-    let que3 = [...this.state.que3];
-    let que4 = [...this.state.que4];
-    let que5 = [...this.state.que5];
+
+    let allQue = [...this.state.allQue];
     for (const item of this.state.alter) {
-      que1.push(item.nilai[0] * item.nilai[0]);
-      que2.push(item.nilai[1] * item.nilai[1]);
-      que3.push(item.nilai[2] * item.nilai[2]);
-      que4.push(item.nilai[3] * item.nilai[3]);
-      que5.push(item.nilai[4] * item.nilai[4]);
+      allQue.push(item.nilai.map((nilai, j) => Math.pow(nilai, 2)));
     }
+
     this.setState({
-      que1,
-      que2,
-      que3,
-      que4,
-      que5,
+      allQue,
     });
-    let mtk1 = [];
-    let mtk2 = [];
-    let mtk3 = [];
-    let mtk4 = [];
-    let mtk5 = [];
-    for (const item of this.state.alter) {
-      mtk1.push(
-        item.nilai[0] / Math.sqrt(this.state.que1.reduce((n, x, i) => n + x, 0))
-      );
-      mtk2.push(
-        item.nilai[1] / Math.sqrt(this.state.que2.reduce((n, x, i) => n + x, 0))
-      );
-      mtk3.push(
-        item.nilai[2] / Math.sqrt(this.state.que3.reduce((n, x, i) => n + x, 0))
-      );
-      mtk4.push(
-        item.nilai[3] / Math.sqrt(this.state.que4.reduce((n, x, i) => n + x, 0))
-      );
-      mtk5.push(
-        item.nilai[4] / Math.sqrt(this.state.que5.reduce((n, x, i) => n + x, 0))
-      );
+
+    const jumKuadrat = [];
+    for (let i = 0; i < this.state.allQue[0].length; i++) {
+      let sum = 0;
+      for (let a = 0; a < this.state.allQue.length; a++) {
+        sum = sum + this.state.allQue[a][i];
+      }
+      jumKuadrat.push(sum);
     }
+
     this.setState({
-      mtk1,
-      mtk2,
-      mtk3,
-      mtk4,
-      mtk5,
+      jumKuadrat,
     });
-    // let sorrt1 = [Math.max.apply(null, mtk1)];
-    // let sorrt2 = Math.max.apply(null, mtk2);
-    // let sorrt3 = Math.max.apply(null, mtk3);
-    // let sorrt4 = Math.max.apply(null, mtk4);
-    // let sorrt5 = Math.max.apply(null, mtk5);
-    // this.setState({
-    //   mtk1: sorrt1,
-    //   mtk2: sorrt2,
-    //   mtk3: sorrt3,
-    //   mtk4: sorrt4,
-    //   mtk5: sorrt5,
-    // });
-    // let sortt = [...mtk1];
-    // sortt = sortt.sort((a, b) => b - a);
-    // this.setState({
-    //   mtk1: sortt,
-    // });
+
+    let mtk = [];
+    for (let i = 0; i < this.state.alter.length; i++) {
+      mtk.push(this.state.alter[i].nilai);
+    }
+
+    for (let i = 0; i < this.state.bobotKriter.length; i++) {
+      const element = this.state.bobotKriter[i];
+      console.log(element)
+    }
+
+    // console.log(mtk)
+    // console.log(this.state.jumKuadrat)
+    // console.log(bobotKriter)
+
+    const firstArray = [];
+    const newFirstArray = [];
+    for (let i = 0; i < mtk.length; i++) {
+      for (let j = 0; j < mtk[i].length; j++) {
+        firstArray.push(
+          (mtk[i][j] / Math.sqrt(this.state.jumKuadrat[j])) * this.state.bobotKriter[j]
+        );
+        if (firstArray.length >= mtk[0].length) {
+          newFirstArray.push(firstArray.splice(0, mtk[0].length));
+        }
+      }
+    }
+
+    let forSum1 = [];
+    for (let i = 0; i < mtk.length; i++) {
+      for (let j = 0; j < mtk[i].length; j++) {
+        forSum1.push(
+          (mtk[i][j] / Math.sqrt(this.state.jumKuadrat[j])) * this.state.bobotKriter[j]
+        );
+      }
+    }
+
+    let arrMatriks = newFirstArray.reduce((c, v) => {
+      v.forEach((o, i) => {
+        c[i] = c[i] || [];
+        c[i].push(o);
+      });
+      return c;
+    }, []);
+
+    this.setState({
+      arrMatriks,
+    });
+
+    // console.log(arrMatriks)
+
+    let forSumPositif = [];
+    let forSumNegatif = [];
+    for (let i = 0; i < arrMatriks.length; i++) {
+      const element = arrMatriks[i];
+      forSumPositif.push(Math.max.apply(null, element));
+      forSumNegatif.push(Math.min.apply(null, element));
+    }
+
+    let p = 0;
+    let n = 0;
+    let nilaiPositif = [];
+    let nilaiNegatif = [];
+    for (let i = 0; i < forSum1.length; i++) {
+      let positif = [];
+      if (forSumPositif[p] === undefined) {
+        p = 0;
+        positif = Math.pow(forSumPositif[p] - forSum1[i], 2);
+      } else {
+        positif = Math.pow(forSumPositif[p] - forSum1[i], 2);
+      }
+      p++;
+      nilaiPositif.push(positif);
+    }
+
+    for (let i = 0; i < forSum1.length; i++) {
+      let negatif = [];
+      if (forSumNegatif[n] === undefined) {
+        n = 0;
+        negatif = Math.pow(forSumNegatif[n] - forSum1[i], 2);
+      } else {
+        negatif = Math.pow(forSumNegatif[n] - forSum1[i], 2);
+      }
+      n++;
+      nilaiNegatif.push(negatif);
+    }
+
+    let sumAll = [];
+    for (let i = 0; i < this.state.alter.length; i++) {
+      const element = this.state.alter[i].alternatif;
+      let mon = { datas: element, posi: [], nega: [] };
+      if (nilaiPositif.length >= mtk[0].length) {
+        mon.posi.push(nilaiPositif.splice(0, mtk[0].length));
+        mon.nega.push(nilaiNegatif.splice(0, mtk[0].length));
+      }
+      sumAll.push(mon);
+    }
+
+    this.setState({
+      sumAll,
+    });
+
+    let finalCount = [];
+    let forRank = [];
+    for (let i = 0; i < sumAll.length; i++) {
+      const element = sumAll[i].datas;
+      let mon = { datas: element, p: [], n: [], rank: [] };
+      mon.p.push(Math.sqrt(sumAll[i].posi[0].reduce((a, b) => a + b, 0)));
+      mon.n.push(Math.sqrt(sumAll[i].nega[0].reduce((a, b) => a + b, 0)));
+      mon.rank.push(
+        Math.sqrt(sumAll[i].nega[0].reduce((a, b) => a + b, 0)) /
+          (Math.sqrt(sumAll[i].posi[0].reduce((a, b) => a + b, 0)) +
+            Math.sqrt(sumAll[i].nega[0].reduce((a, b) => a + b, 0)))
+      );
+      finalCount.push(mon);
+      forRank.push([
+        element,
+        Math.sqrt(sumAll[i].nega[0].reduce((a, b) => a + b, 0)) /
+          (Math.sqrt(sumAll[i].posi[0].reduce((a, b) => a + b, 0)) +
+            Math.sqrt(sumAll[i].nega[0].reduce((a, b) => a + b, 0))),
+      ]);
+    }
+
+    this.setState({
+      finalCount,
+    });
+       
+    let b = [];
+    for (let i = 0; i < forRank.length; i++) {
+      const data = forRank[i][1];
+      b.push(data);
+    }
+
+    let forRankMax = Math.max.apply(null, b);
+    let filterRank = forRank.filter((v) => v[1] === forRankMax);
+    let jumjum = [filterRank[0][0], forRankMax]
+
+    this.setState({
+      totalRank: jumjum,
+    });
   };
 
   componentDidMount() {
+    this.unsubscribeTwo = this.bon.onSnapshot(this.onCollectionUpdateTwo);
     this.unsubscribe = this.ref.onSnapshot(this.onCollectionUpdate);
   }
 
   render() {
     return (
-      <div class="container">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3 class="panel-title">Tabel Nilai</h3>
-          </div>
-          <div class="panel-body">
-            <h4>
-              <Link to="/" className="btn btn-primary">
-                HOME
-              </Link>
-            </h4>
-            <label>1. Tabel Kuadrat</label>
-            <table id="nilai" class="table table-stripe">
-              <thead>
-                <tr>
-                  <th>Kode</th>
-                  <th>que1</th>
-                  <th>que2</th>
-                  <th>que3</th>
-                  <th>que4</th>
-                  <th>que5</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.state.alter.map((alter, index) => (
+      <div>
+        <HeaderTwo />
+        <div className="container">
+          <div className="panel panel-default">
+            <div className="panel-body">
+              {/* TABEL 1 */}
+              <h2>1. Tabel Kuadrat</h2>
+              <table className="table table-stripe table-bordered">
+                <thead className="table-primary">
                   <tr>
-                    <td>
-                      <Link to={`/show/${alter.key}`}>{alter.kode}</Link>
-                    </td>
-                    <td>{alter.nilai[0] * alter.nilai[0]}</td>
-                    <td>{alter.nilai[1] * alter.nilai[1]}</td>
-                    <td>{alter.nilai[2] * alter.nilai[2]}</td>
-                    <td>{alter.nilai[3] * alter.nilai[3]}</td>
-                    <td>{alter.nilai[4] * alter.nilai[4]}</td>
+                    <th>Kode</th>
+                    {this.state.kriter.map((nilai, j) => (
+                        <th key={j}>QUE{nilai.kode}</th>
+                      ))}
                   </tr>
-                ))}
-                <td>Total</td>
-                <td> {this.state.que1.reduce((n, x, i) => n + x, 0)}</td>
-                <td> {this.state.que2.reduce((n, x, i) => n + x, 0)}</td>
-                <td> {this.state.que3.reduce((n, x, i) => n + x, 0)}</td>
-                <td> {this.state.que4.reduce((n, x, i) => n + x, 0)}</td>
-                <td> {this.state.que5.reduce((n, x, i) => n + x, 0)}</td>
-              </tbody>
-            </table>
-            <label>2. Tabel Normalisasi</label>
-            <table id="nilai" class="table table-stripe">
-              <thead>
-                <tr>
-                  <th>Kode</th>
-                  <th>que1</th>
-                  <th>que2</th>
-                  <th>que3</th>
-                  <th>que4</th>
-                  <th>que5</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.state.alter.map((alter, index) => (
+                </thead>
+                <tbody>
+                  {this.state.alter.map((alter, index) => (
+                    <tr key={index}>
+                      <td>{alter.kode}</td>
+                      {alter.nilai.map((nilai, j) => (
+                        <td key={j}>{Math.pow(nilai, 2)}</td>
+                      ))}
+                    </tr>
+                  ))}
                   <tr>
-                    <td>
-                      <Link to={`/show/${alter.key}`}>{alter.kode}</Link>
-                    </td>
-                    <td>
-                      {(
-                        alter.nilai[0] /
-                        Math.sqrt(this.state.que1.reduce((n, x, i) => n + x, 0))
-                      ).toFixed(5)}
-                    </td>
-                    <td>
-                      {(
-                        alter.nilai[1] /
-                        Math.sqrt(this.state.que2.reduce((n, x, i) => n + x, 0))
-                      ).toFixed(5)}
-                    </td>
-                    <td>
-                      {(
-                        alter.nilai[2] /
-                        Math.sqrt(this.state.que3.reduce((n, x, i) => n + x, 0))
-                      ).toFixed(5)}
-                    </td>
-                    <td>
-                      {(
-                        alter.nilai[3] /
-                        Math.sqrt(this.state.que4.reduce((n, x, i) => n + x, 0))
-                      ).toFixed(5)}
-                    </td>
-                    <td>
-                      {(
-                        alter.nilai[4] /
-                        Math.sqrt(this.state.que5.reduce((n, x, i) => n + x, 0))
-                      ).toFixed(5)}
-                    </td>
+                    <td>Total</td>
+                    {this.state.jumKuadrat.map((jumKuadrat, index) => (
+                      <td>{jumKuadrat}</td>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <label>3. Tabel Normalisasi Terbobot</label>
-            <table id="nilai" class="table table-stripe">
-              <thead>
-                <tr>
-                  <th>Kode</th>
-                  <th>que1</th>
-                  <th>que2</th>
-                  <th>que3</th>
-                  <th>que4</th>
-                  <th>que5</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.state.alter.map((alter, index) => (
+                </tbody>
+              </table>
+
+              {/* TABEL 2 */}
+              <h2>2. Tabel Normalisasi</h2>
+              <table className="table table-stripe table-bordered">
+              <thead className="table-primary">
                   <tr>
-                    <td>
-                      <Link to={`/show/${alter.key}`}>{alter.kode}</Link>
-                    </td>
-                    <td>
-                      {(
-                        (alter.nilai[0] /
-                          Math.sqrt(
-                            this.state.que1.reduce((n, x, i) => n + x, 0)
-                          )) *
-                        5
-                      ).toFixed(5)}
-                    </td>
-                    <td>
-                      {(
-                        (alter.nilai[1] /
-                          Math.sqrt(
-                            this.state.que2.reduce((n, x, i) => n + x, 0)
-                          )) *
-                        3
-                      ).toFixed(5)}
-                    </td>
-                    <td>
-                      {(
-                        (alter.nilai[2] /
-                          Math.sqrt(
-                            this.state.que3.reduce((n, x, i) => n + x, 0)
-                          )) *
-                        4
-                      ).toFixed(5)}
-                    </td>
-                    <td>
-                      {(
-                        (alter.nilai[3] /
-                          Math.sqrt(
-                            this.state.que4.reduce((n, x, i) => n + x, 0)
-                          )) *
-                        2
-                      ).toFixed(5)}
-                    </td>
-                    <td>
-                      {(
-                        (alter.nilai[4] /
-                          Math.sqrt(
-                            this.state.que5.reduce((n, x, i) => n + x, 0)
-                          )) *
-                        5
-                      ).toFixed(5)}
-                    </td>
+                    <th>Kode</th>
+                    {this.state.kriter.map((nilai, j) => (
+                        <th key={j}>QUE{nilai.kode}</th>
+                      ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <label>4. Tabel Matriks Solusi Ideal</label>
-            <table id="nilai" class="table table-stripe">
-              <thead>
-                <tr>
-                  <th>Kode</th>
-                  <th>que1 (cost)</th>
-                  <th>que2 (benefit)</th>
-                  <th>que3 (cost)</th>
-                  <th>que4 (benefit)</th>
-                  <th>que5 (benefit)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>positif</td>
-                  <td>{(Math.min.apply(null, this.state.mtk1).toFixed(5))}</td>
-                  <td>{(Math.max.apply(null, this.state.mtk2).toFixed(5))}</td>
-                  <td>{(Math.min.apply(null, this.state.mtk3).toFixed(5))}</td>
-                  <td>{(Math.max.apply(null, this.state.mtk4).toFixed(5))}</td>
-                  <td>{(Math.max.apply(null, this.state.mtk5).toFixed(5))}</td>
-                </tr>
-                <tr>
-                  <td>Negatif</td>
-                  <td>{(Math.max.apply(null, this.state.mtk1).toFixed(5))}</td>
-                  <td>{(Math.min.apply(null, this.state.mtk2).toFixed(5))}</td>
-                  <td>{(Math.max.apply(null, this.state.mtk3).toFixed(5))}</td>
-                  <td>{(Math.min.apply(null, this.state.mtk4).toFixed(5))}</td>
-                  <td>{(Math.min.apply(null, this.state.mtk5).toFixed(5))}</td>
-                </tr>
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {this.state.alter.map((alter, index) => (
+                    <tr key={index}>
+                      <td>{alter.kode}</td>
+                      {alter.nilai.map((nilai, j) => (
+                        <td key={j}>
+                          {(nilai / Math.sqrt(this.state.jumKuadrat[j])).toFixed(5)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* TABEL 3 */}
+              <h2>3. Tabel Normalisasi Terbobot</h2>
+              <table className="table table-stripe table-bordered">
+              <thead className="table-primary">
+                  <tr>
+                    <th>Kode</th>
+                    {this.state.kriter.map((nilai, j) => (
+                        <th key={j}>QUE{nilai.kode}</th>
+                      ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {this.state.alter.map((alter, index) => (
+                    <tr key={index}>
+                      <td>{alter.kode}</td>
+                      {alter.nilai.map((nilai, j) => (
+                        <td key={j}>
+                          {(
+                            (nilai / Math.sqrt(this.state.jumKuadrat[j])) *
+                            this.state.bobotKriter[j]
+                          ).toFixed(5)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* TABEL 4 */}
+              <h2>4. Tabel Matriks Solusi Ideal</h2>
+              <table className="table table-stripe table-bordered">
+              <thead className="table-primary">
+                  <tr>
+                    <th>Kode</th>
+                    {this.state.kriter.map((nilai, j) => (
+                        <th key={j}>QUE{nilai.kode}</th>
+                      ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Positif</td>
+                    {this.state.arrMatriks.map((nilai, j) => (
+                      <td key={j}>{Math.max.apply(null, nilai).toFixed(5)}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td>Negatif</td>
+                    {this.state.arrMatriks.map((nilai, j) => (
+                      <td key={j}>{Math.min.apply(null, nilai).toFixed(5)}</td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* TABEL  5 */}
+              <h2>5. Tabel Total</h2>
+              <table className="table table-stripe table-bordered">
+                <thead className="table-primary">
+                  <tr>
+                    <th>Nama</th>
+                    <th>Positif</th>
+                    <th>Negatif</th>
+                    <th>Preferensi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {this.state.sumAll.map((alter, index) => (
+                    <tr key={index}>
+                      <td>{alter.datas}</td>
+                      <td>
+                        {Math.sqrt(
+                          alter.posi[0].reduce((a, b) => a + b, 0)
+                        ).toFixed(5)}
+                      </td>
+                      <td>
+                        {Math.sqrt(
+                          alter.nega[0].reduce((a, b) => a + b, 0)
+                        ).toFixed(5)}
+                      </td>
+                      <td>
+                        {(
+                          Math.sqrt(alter.nega[0].reduce((a, b) => a + b, 0)) /
+                          (Math.sqrt(alter.posi[0].reduce((a, b) => a + b, 0)) +
+                            Math.sqrt(alter.nega[0].reduce((a, b) => a + b, 0)))
+                        ).toFixed(5)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p>
+                Dari hasil perhitungan dari tabel - tabel di atas dapat kita
+                simpulkan bahwa peringkat pertama adalah :{" "}
+                <span style={{ color: "#2979A0" }}>
+                  {this.state.totalRank[0]}{" "}
+                </span>
+                dengan nilai preferensinya adalah :{" "}
+                <span style={{ color: "#2979A0" }}>
+                  {" "}
+                  {parseFloat(this.state.totalRank[1]).toFixed(5)}{" "}
+                </span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -308,3 +410,37 @@ class Result extends Component {
 }
 
 export default Result;
+
+
+
+    // let allSum1 = []
+    // for (let i = 0; i < newFirstArray.length; i++) {
+    //   // const element = newFirstArray[i];
+    //   for (let j = 0; j < newFirstArray[i].length; j++) {
+    //     const element = newFirstArray[i][j];
+    //     allSum1.push(element)
+    //   }
+
+    // }
+
+    // for (var j = 0; j < newFirstArray.length; j++) {
+    //   var arrTemp = []
+    //   for (var i = 0; i < newFirstArray.length; i++) {
+    //     arrTemp[i] = newFirstArray[i][j];
+    //     if (i === newFirstArray.length - 1) {
+    //       bonArr.push(arrTemp)
+    //     }
+    //   }
+    // }
+
+    // let arrPost = []
+    // for (let i = 0; i < newFirstArray.length; i++) {
+    //   // const element = newFirstArray[i];
+    //   for (let j = 0; j < newFirstArray[i].length; j++) {
+    //     const elementX = newFirstArray[i][j];
+    //     if (j == newFirstArray.length) {
+    //       arrPost.push(elementX)
+    //     }
+    //   }
+    //   console.log(arrPost)
+    // }
